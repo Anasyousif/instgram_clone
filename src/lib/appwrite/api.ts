@@ -1,6 +1,6 @@
-import { INewUser } from "@/types";
+import { INewPost, INewUser } from "@/types";
 import { ID , Query } from "appwrite";
-import { account, appwriteConfig, avatars, databases } from "./config";
+import { account, appwriteConfig, avatars, databases, storage } from "./config";
 
 
 export async function createUserAccount(user: INewUser) {
@@ -102,6 +102,66 @@ export async function createUserAccount(user: INewUser) {
     try {
       const session = await account.deleteSession("current");
       return session
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+
+  export async function createPost(post:INewPost) {
+    try {
+      // upload image 
+      const uploadedFile = await uploadFile(post.file[0]);
+
+      if (!uploadFile) throw Error;
+
+      // Get file url
+      const fileUrl = getFilePreview(uploadFile.$id);
+
+
+      if (!fileUrl) {
+        deleteFile(uploadedFile.$id)
+        throw Error};
+       
+    } catch (error) {
+     console.log(error) 
+    }
+  }
+
+  export async function uploadFile(file: File) {
+    try {
+      const uploadedFile = await storage.createFile(
+        appwriteConfig.storageId,
+        ID.unique(),
+        file
+      );
+
+      return uploadedFile
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  export async function getFilePreview(filedId: string) {
+    try {
+      const fileUrl = storage.getFilePreview(
+        appwriteConfig.storageId ,
+        filedId,
+        2000,
+        2000,
+        "top",
+        100,
+        )
+
+        return fileUrl;
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  export async function deleteFile(filedId: string) {
+    try {
+      await storage.deleteFile(appwriteConfig.storageId, filedId)
     } catch (error) {
       console.log(error)
     }
