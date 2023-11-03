@@ -113,18 +113,42 @@ export async function createUserAccount(user: INewUser) {
       // upload image 
       const uploadedFile = await uploadFile(post.file[0]);
 
-      if (!uploadFile) throw Error;
+      if (!uploadedFile) throw Error;
 
-      // Get file url
-      const fileUrl = getFilePreview(uploadFile.$id);
+      // Get file url 
 
+      const fileUrl = getFilePreview(uploadedFile.$id);
+    if (!fileUrl) {
+      await deleteFile(uploadedFile.$id);
+      throw Error;
+    }
 
-      if (!fileUrl) {
-        deleteFile(uploadedFile.$id)
-        throw Error};
-       
+    // convert tags in an Array
+
+    const tags = post.tags?.replace(/ /g,'').split(',') || [];
+
+    // Save a post to database
+    const newPost = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      ID.unique(),
+      {
+        creator: post.userId,
+        caption: post.caption,
+        imageUrl: fileUrl,
+        ImageId: uploadedFile.$id,
+        location: post.location,
+        tags: tags
+      }
+    )
+    if (!newPost) {
+      await deleteFile(uploadedFile.$id)
+      throw Error;
+    }
+    
+    return newPost
     } catch (error) {
-     console.log(error) 
+      console.log(error);
     }
   }
 
@@ -159,10 +183,12 @@ export async function createUserAccount(user: INewUser) {
     }
   }
 
-  export async function deleteFile(filedId: string) {
+  export async function deleteFile(fileId: string) {
     try {
-      await storage.deleteFile(appwriteConfig.storageId, filedId)
+      await storage.deleteFile(appwriteConfig.storageId, fileId);
+  
+      return { status: "ok" };
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  } 

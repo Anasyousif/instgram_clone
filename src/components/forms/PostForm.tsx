@@ -18,7 +18,7 @@ import { PostValidation } from "@/lib/validation"
 import { Models } from "appwrite"
 import { useCreatePost } from "@/lib/react-query/queriesAndMutations"
 import { useUserContext } from "@/context/AuthContext"
-import { toast, useToast } from "../ui/use-toast"
+import { useToast } from "../ui/use-toast"
 
 
 type PostFormProps = {
@@ -49,15 +49,15 @@ const PostForm = ({ post }: PostFormProps) => {
     const newPost = await createPost({
       ...values,
       userId: user.id,
-    })
+    });
+  
     if (!newPost) {
       toast({
-        title: 'please try again'
-      })
+        title: `$post failed. Please try again.`,
+      });
     }
-
-    navigate('/');
-  }
+    navigate("/");
+  };
 
   return (
     <Form {...form}>
@@ -126,6 +126,6 @@ const PostForm = ({ post }: PostFormProps) => {
         </div>
       </form>
     </Form>
-  )
-}          
+  );
+};          
 export default PostForm
