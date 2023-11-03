@@ -166,7 +166,7 @@ export async function createUserAccount(user: INewUser) {
     }
   }
 
-  export async function getFilePreview(filedId: string) {
+  export function getFilePreview(filedId: string) {
     try {
       const fileUrl = storage.getFilePreview(
         appwriteConfig.storageId ,
@@ -203,3 +203,41 @@ export async function getRecentPosts() {
   if (!posts) throw Error;
   return posts;
 }  
+
+export async function likePost(postId:string, likesArray: string[]) {
+  try {
+    const updatedPost = await databases.updateDocument(
+    appwriteConfig.databaseId, 
+    appwriteConfig.postCollectionId,
+    postId,
+    )
+    {
+      likes: likesArray
+    }
+
+    if (!updatedPost) throw Error
+
+    return updatedPost;
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export async function savePost(postId:string,  userID: string[]) {
+  try {
+    const updatedPost = await databases.createDocument(
+    appwriteConfig.databaseId, 
+    appwriteConfig.savesCollectionId,
+    Id.unique(),
+    )
+    {
+      likes: likesArray
+    }
+
+    if (!updatedPost) throw Error
+
+    return updatedPost;
+  } catch (error) {
+    console.log(error)
+  }
+}
