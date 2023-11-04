@@ -1,6 +1,9 @@
 import { INewPost, INewUser } from "@/types";
 import { ID , Query } from "appwrite";
 import { account, appwriteConfig, avatars, databases, storage } from "./config";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { string } from "zod";
+import { QUERY_KEYS } from "../react-query/queryKeys";
 
 
 export async function createUserAccount(user: INewUser) {
@@ -257,3 +260,28 @@ export async function deleteSavedPost(savedRecordId: string) {
   }
 }
 
+
+export const useLikePost = () => {
+  const queryClient = useQueryClient(); 
+
+  return useMutation({
+    mutationFn: ({postId, likesArray}: { postId: string; likesArray:string[] }) =>
+      likePost(postId, likesArray), 
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POST_BY_ID, data?.$id]
+      })
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_RECENT_POSTS, data?.$id]
+      })
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POSTS, data?.$id]
+      })
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CURRENT_USER, data?.$id]
+      })
+    }  
+    
+  })
+
+}

@@ -7,6 +7,7 @@ import {
  } from '@tanstack/react-query';
 import { createUserAccount, signInAccount, signOutAccount , createPost, getRecentPosts, likePost } from '../appwrite/api';
 import { QUERY_KEYS } from './queryKeys';
+import { likePost } from '../appwrite/api';
 import { string } from 'zod';
 
 export const useCreateUserAccount = () => {
@@ -53,7 +54,12 @@ export const useLikePost = () => {
   const queryClient = useQueryClient();
 
   return mutationFn: ({postId, LikesArray } : {postId: string; likesArray: string[] })
-  => likePost(postId, LikesArray)
+  => likePost(postId, LikesArray), 
+  onSucess:(data) => {
+    queryClient.invalidateQueries({
+      queryKey: [QUERY_KEYS.GET_POST_BY_ID, data?.$id]
+    })
+  }
 
 
   })
