@@ -1,11 +1,10 @@
 import { useState , useEffect } from "react";
 import { useUserContext } from "@/context/AuthContext";
-import { useLikePost , useSavePost , useDeleteSavedPost } from "@/lib/react-query/queriesAndMutations";
+import { useLikePost , useSavePost , useDeleteSavedPost , useGetCurrentUser } from "@/lib/react-query/queriesAndMutations";
 import { Models } from "appwrite"
 import { checkIsLiked } from "@/lib/utils";
 import { likePost } from "@/lib/appwrite/api";
 import { record } from "zod";
-
 type PostStatsProps = {
     post: Models.Document;
     userId: string;
@@ -23,8 +22,11 @@ const PostStats = ({ post , userId }: PostStatsProps) => {
   const {mutate: savePost } = useSavePost();
   const {mutate: deleteSavedPost } = useDeleteSavedPost();
 
-  const {data: currentUser } = useGetcurrentUser();
+  const {data: currentUser } = useGetCurrentUser();
 
+  const savedPostRecord = currentUser?.save.find((record: Models.Document) =>
+  record.$id === post.$id);
+  
   const handleLikePost = (e:React.MouseEvent) => {
     e.stopPropagation();
 
@@ -48,8 +50,6 @@ const PostStats = ({ post , userId }: PostStatsProps) => {
   const handleSavePost = (e:React.MouseEvent) => {
     e.stopPropagation();
     
-     const savedPostRecord = currentUser?.save.find((record: Models.Document) =>
-     record.$id === post.$id);
 
     if (savedPostRecord) {
       setIsSaved(false);
