@@ -23,10 +23,11 @@ import { useToast } from "../ui/use-toast"
 
 type PostFormProps = {
   post?: Models.Document;
+  action: 'Create' | 'update';
 }
 
 
-const PostForm = ({ post }: PostFormProps) => {
+const PostForm = ({ post, action }: PostFormProps) => {
   const {mutateAsync: createPost, isPending: isLoadingCreate } = 
   useCreatePost();
   const { user } = useUserContext()
@@ -49,15 +50,16 @@ const PostForm = ({ post }: PostFormProps) => {
     const newPost = await createPost({
       ...values,
       userId: user.id,
-    });
+    })
   
     if (!newPost) {
       toast({
         title: `$post failed. Please try again.`,
-      });
+      })
     }
     navigate("/");
-  };
+  }
+
 
   return (
     <Form {...form}>

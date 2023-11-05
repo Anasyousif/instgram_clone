@@ -5,9 +5,11 @@ import {
     useQueryClient,
     useInfiniteQuery
  } from '@tanstack/react-query';
-import { createUserAccount, signInAccount, signOutAccount , createPost, getRecentPosts, likePost, savePost, deleteSavedPost, getCurrentUser } from '../appwrite/api';
+import { createUserAccount, signInAccount, signOutAccount , createPost, getRecentPosts, likePost, savePost, deleteSavedPost, getCurrentUser, getPostById } from '../appwrite/api';
 import { QUERY_KEYS } from './queryKeys';
 import { string } from 'zod';
+
+
 
 export const useCreateUserAccount = () => {
     return useMutation({
@@ -122,5 +124,13 @@ export const useGetCurrentUser = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_CURRENT_USER],
     queryFn: getCurrentUser
+  })
+}
+
+export const useGetPostById = (postId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_POST_BY_ID, postId],
+    queryFn: () => getPostById(postId),
+    enabled: !!postId
   })
 }
