@@ -1,8 +1,9 @@
-import { INewPost, INewUser } from "@/types";
+import { INewPost, INewUser , IUpdatePost } from "@/types";
 import { ID , Query } from "appwrite";
 import { account, appwriteConfig, avatars, databases, storage } from "./config";
 
 import { string } from "zod";
+import { log } from "console";
 
 
 
@@ -271,3 +272,75 @@ export async function getPostById(postId: string) {
     console.log(error)
   }
 } 
+
+export async function updatedPost(post:IUpdatePost) {
+  const hasFileToupdate = post.file.length > 0;
+  try {
+    let image {
+      imageUrl: post.imageUrl, 
+      imageId : post.imageId, 
+
+    }
+
+    if (hasFileToupdate) {
+      // upload image 
+    const uploadedFile = await uploadFile(post.file[0]);
+    if (!uploadedFile) throw Error;
+
+
+    // Get file url 
+
+    const fileUrl = getFilePreview(uploadedFile.$id);
+  if (!fileUrl) {
+    await deleteFile(uploadedFile.$id);
+    throw Error;
+  }
+  image = { ...image, imageUrl: fileUrl, imageId: uploadFile.$id
+
+  }
+    }
+
+  // convert tags in an Array
+
+  const tags = post.tags?.replace(/ /g,'').split(',') || [];
+
+  // Save a post to database
+  const  updated = await databases.updateDocument(
+    appwriteConfig.databaseId,
+    appwriteConfig.postCollectionId,
+    post.postId(),
+    {
+      caption: post.caption,
+      imageUrl: image.imageUrl,
+      ImageId: image.imageId,
+      location: post.location,
+      tags: tags
+    }
+  )
+  if (!updatedPost) {
+    await deleteFile(post.imageId)
+    throw Error;
+  }
+  
+  return updatedPost
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function deletePost(postId: string , imageId: string) {
+  if (!postId || imageId) throw Error;
+
+  try {
+    await databases.deleteDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      postId
+    )
+
+    return {status: 'ok'}
+    
+  } catch (error) {
+    console.log(error)
+  }
+}
