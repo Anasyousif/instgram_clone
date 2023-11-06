@@ -3,7 +3,7 @@ import { ID , Query } from "appwrite";
 import { account, appwriteConfig, avatars, databases, storage } from "./config";
 
 import { string } from "zod";
-import { log } from "console";
+import { error, log } from "console";
 
 
 
@@ -340,6 +340,42 @@ export async function deletePost(postId: string , imageId: string) {
 
     return {status: 'ok'}
     
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export async function getInfinitePosts({ pageParam }: {pageParam:number }) {
+  const queries: any[] = [Query.orderDesc('$updatedAt'), Query.limit(10)]
+
+  if (pageParam) {
+    queries.push(Query.cursorAfter(pageParam.toString())); 
+  }
+
+  try {
+    const post = await databases.listDocuments(
+      appwriteConfig.databaseId, 
+      appwriteConfig.postCollectionId,
+      queries
+    )
+    if (!post) throw error
+
+    return post
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export async function searchPosts( searchTerm: string ) {
+  try {
+    const post = await databases.listDocuments(
+      appwriteConfig.databaseId, 
+      appwriteConfig.postCollectionId,
+      [Query.search('caption', searchTerm)]
+    )
+    if (!post) throw error
+
+    return post
   } catch (error) {
     console.log(error)
   }
